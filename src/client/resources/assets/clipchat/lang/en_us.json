@@ -1,0 +1,53 @@
+{
+	"clipchat.widget.title": "ClipChat",
+	"clipchat.widget.empty": "Nothing copied yet",
+	"clipchat.tab.minecraft": "Minecraft",
+	"clipchat.tab.windows": "Windows",
+
+	"clipchat.state.loading": "Reading...",
+	"clipchat.state.disabled_by_os": "Windows clipboard history is off. Turn it on in Windows Settings, under System > Clipboard.",
+	"clipchat.state.access_denied": "Windows would not hand over the history. This usually means the game window is not focused.",
+	"clipchat.state.unsupported_os": "Only available on Windows.",
+	"clipchat.state.error": "Could not read the Windows clipboard history.",
+
+	"clipchat.error.entry_missing": "That entry is no longer in the history",
+	"clipchat.error.pin_limit_reached": "The pin limit has been reached",
+	"clipchat.error.windows_action_failed": "Windows refused that change to its clipboard history",
+
+	"clipchat.config.title": "ClipChat Settings",
+	"clipchat.config.theme": "Theme",
+	"clipchat.config.theme.tooltip": "Colours used by the clipboard panel. Any colour you set yourself overrides the theme.",
+	"clipchat.config.visible": "Show panel",
+	"clipchat.config.visible.tooltip": "Show the clipboard panel in the chat screen. Turning this off hides it completely; you can still reach these settings with /clipchat or the ClipChat keybind.",
+	"clipchat.config.windows": "Windows history",
+	"clipchat.config.windows.tooltip": "Off by default. When on, the panel gains a Windows tab that reads your Windows clipboard history live. ClipChat never writes anything from that tab to disk.",
+	"clipchat.config.windows.unavailable": "Only available on Windows.",
+	"clipchat.config.capture": "Record copies",
+	"clipchat.config.capture.tooltip": "Off by default. When on, text you copy in Minecraft is saved to a file on this computer and is still there after you close the game. Turn it off to keep the panel empty between sessions.",
+	"clipchat.config.colors": "Custom colours...",
+	"clipchat.config.max_unpinned": "Max entries",
+	"clipchat.config.max_unpinned.tooltip": "How many unpinned entries to keep. The oldest is dropped once the list is full. Between 1 and 1000.",
+	"clipchat.config.max_pinned": "Max pinned",
+	"clipchat.config.max_pinned.tooltip": "How many entries can be pinned at once. Pinned entries are never dropped automatically. Between 1 and 500.",
+	"clipchat.config.max_length": "Max length",
+	"clipchat.config.max_length.tooltip": "Longer text is shortened to this many characters before it is stored. Between 16 and 65536.",
+	"clipchat.config.save": "Save",
+	"clipchat.config.cancel": "Cancel",
+	"clipchat.config.reset": "Reset to theme",
+	"clipchat.config.done": "Done",
+
+	"clipchat.theme.dark": "Dark",
+	"clipchat.theme.light": "Light",
+	"clipchat.theme.high_contrast": "High contrast",
+	"clipchat.theme.classic": "Classic",
+
+	"clipchat.color.background": "Background",
+	"clipchat.color.title_bar": "Title bar",
+	"clipchat.color.border": "Border",
+	"clipchat.color.row_hover": "Row highlight",
+	"clipchat.color.text": "Text",
+	"clipchat.color.text_dim": "Dimmed text",
+	"clipchat.color.pin": "Pin marker",
+
+	"key.clipchat.config": "Open ClipChat settings"
+}

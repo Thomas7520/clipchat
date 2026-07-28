@@ -1,0 +1,53 @@
+{
+	"clipchat.widget.title": "ClipChat",
+	"clipchat.widget.empty": "Rien de copié pour l'instant",
+	"clipchat.tab.minecraft": "Minecraft",
+	"clipchat.tab.windows": "Windows",
+
+	"clipchat.state.loading": "Lecture...",
+	"clipchat.state.disabled_by_os": "L'historique du presse-papiers Windows est désactivé. Activez-le dans les paramètres Windows, sous Système > Presse-papiers.",
+	"clipchat.state.access_denied": "Windows a refusé de fournir l'historique. Cela signifie généralement que la fenêtre du jeu n'est pas au premier plan.",
+	"clipchat.state.unsupported_os": "Disponible uniquement sous Windows.",
+	"clipchat.state.error": "Impossible de lire l'historique du presse-papiers Windows.",
+
+	"clipchat.error.entry_missing": "Cette entrée ne figure plus dans l'historique",
+	"clipchat.error.pin_limit_reached": "La limite d'épinglages est atteinte",
+	"clipchat.error.windows_action_failed": "Windows a refusé cette modification de son historique du presse-papiers",
+
+	"clipchat.config.title": "Paramètres de ClipChat",
+	"clipchat.config.theme": "Thème",
+	"clipchat.config.theme.tooltip": "Couleurs utilisées par le panneau du presse-papiers. Toute couleur que vous définissez vous-même remplace celle du thème.",
+	"clipchat.config.visible": "Afficher le panneau",
+	"clipchat.config.visible.tooltip": "Affiche le panneau du presse-papiers dans l'écran de discussion. Le désactiver le masque complètement ; ces paramètres restent accessibles avec /clipchat ou la touche ClipChat.",
+	"clipchat.config.windows": "Historique Windows",
+	"clipchat.config.windows.tooltip": "Désactivé par défaut. Une fois activé, le panneau reçoit un onglet Windows qui lit en direct l'historique de votre presse-papiers Windows. ClipChat n'écrit jamais sur le disque ce qui provient de cet onglet.",
+	"clipchat.config.windows.unavailable": "Disponible uniquement sous Windows.",
+	"clipchat.config.capture": "Enregistrer les copies",
+	"clipchat.config.capture.tooltip": "Désactivé par défaut. Une fois activé, le texte que vous copiez dans Minecraft est enregistré dans un fichier sur cet ordinateur et y reste après la fermeture du jeu. Désactivez-le pour que le panneau se vide entre deux sessions.",
+	"clipchat.config.colors": "Couleurs personnalisées...",
+	"clipchat.config.max_unpinned": "Entrées max.",
+	"clipchat.config.max_unpinned.tooltip": "Nombre d'entrées non épinglées à conserver. La plus ancienne est supprimée lorsque la liste est pleine. Entre 1 et 1000.",
+	"clipchat.config.max_pinned": "Épinglages max.",
+	"clipchat.config.max_pinned.tooltip": "Nombre d'entrées pouvant être épinglées simultanément. Les entrées épinglées ne sont jamais supprimées automatiquement. Entre 1 et 500.",
+	"clipchat.config.max_length": "Longueur max.",
+	"clipchat.config.max_length.tooltip": "Un texte plus long est raccourci à ce nombre de caractères avant d'être enregistré. Entre 16 et 65536.",
+	"clipchat.config.save": "Enregistrer",
+	"clipchat.config.cancel": "Annuler",
+	"clipchat.config.reset": "Rétablir le thème",
+	"clipchat.config.done": "Terminé",
+
+	"clipchat.theme.dark": "Sombre",
+	"clipchat.theme.light": "Clair",
+	"clipchat.theme.high_contrast": "Contraste élevé",
+	"clipchat.theme.classic": "Classique",
+
+	"clipchat.color.background": "Arrière-plan",
+	"clipchat.color.title_bar": "Barre de titre",
+	"clipchat.color.border": "Bordure",
+	"clipchat.color.row_hover": "Surbrillance de ligne",
+	"clipchat.color.text": "Texte",
+	"clipchat.color.text_dim": "Texte atténué",
+	"clipchat.color.pin": "Marqueur d'épinglage",
+
+	"key.clipchat.config": "Ouvrir les paramètres de ClipChat"
+}

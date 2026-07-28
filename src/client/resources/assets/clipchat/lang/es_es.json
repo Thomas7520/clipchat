@@ -1,0 +1,53 @@
+{
+	"clipchat.widget.title": "ClipChat",
+	"clipchat.widget.empty": "Aún no has copiado nada",
+	"clipchat.tab.minecraft": "Minecraft",
+	"clipchat.tab.windows": "Windows",
+
+	"clipchat.state.loading": "Leyendo...",
+	"clipchat.state.disabled_by_os": "El historial del portapapeles de Windows está desactivado. Actívalo en la configuración de Windows, en Sistema > Portapapeles.",
+	"clipchat.state.access_denied": "Windows no ha facilitado el historial. Normalmente esto significa que la ventana del juego no está en primer plano.",
+	"clipchat.state.unsupported_os": "Solo disponible en Windows.",
+	"clipchat.state.error": "No se ha podido leer el historial del portapapeles de Windows.",
+
+	"clipchat.error.entry_missing": "Esa entrada ya no está en el historial",
+	"clipchat.error.pin_limit_reached": "Se ha alcanzado el límite de elementos fijados",
+	"clipchat.error.windows_action_failed": "Windows ha rechazado ese cambio en su historial del portapapeles",
+
+	"clipchat.config.title": "Ajustes de ClipChat",
+	"clipchat.config.theme": "Tema",
+	"clipchat.config.theme.tooltip": "Colores que usa el panel del portapapeles. Cualquier color que definas tú mismo sustituye al del tema.",
+	"clipchat.config.visible": "Mostrar panel",
+	"clipchat.config.visible.tooltip": "Muestra el panel del portapapeles en la pantalla de chat. Al desactivarlo se oculta por completo; puedes seguir accediendo a estos ajustes con /clipchat o con la tecla de ClipChat.",
+	"clipchat.config.windows": "Historial de Windows",
+	"clipchat.config.windows.tooltip": "Desactivado por defecto. Al activarlo, el panel añade una pestaña de Windows que lee en directo el historial del portapapeles de Windows. ClipChat nunca guarda en disco nada de esa pestaña.",
+	"clipchat.config.windows.unavailable": "Solo disponible en Windows.",
+	"clipchat.config.capture": "Registrar copias",
+	"clipchat.config.capture.tooltip": "Desactivado por defecto. Al activarlo, el texto que copias en Minecraft se guarda en un archivo de este equipo y sigue ahí después de cerrar el juego. Desactívalo para que el panel se vacíe entre sesiones.",
+	"clipchat.config.colors": "Colores personalizados...",
+	"clipchat.config.max_unpinned": "Entradas máx.",
+	"clipchat.config.max_unpinned.tooltip": "Cuántas entradas sin fijar se conservan. La más antigua se descarta cuando la lista se llena. Entre 1 y 1000.",
+	"clipchat.config.max_pinned": "Fijadas máx.",
+	"clipchat.config.max_pinned.tooltip": "Cuántas entradas pueden estar fijadas a la vez. Las entradas fijadas nunca se descartan automáticamente. Entre 1 y 500.",
+	"clipchat.config.max_length": "Longitud máx.",
+	"clipchat.config.max_length.tooltip": "El texto más largo se recorta a este número de caracteres antes de guardarse. Entre 16 y 65536.",
+	"clipchat.config.save": "Guardar",
+	"clipchat.config.cancel": "Cancelar",
+	"clipchat.config.reset": "Restablecer al tema",
+	"clipchat.config.done": "Hecho",
+
+	"clipchat.theme.dark": "Oscuro",
+	"clipchat.theme.light": "Claro",
+	"clipchat.theme.high_contrast": "Alto contraste",
+	"clipchat.theme.classic": "Clásico",
+
+	"clipchat.color.background": "Fondo",
+	"clipchat.color.title_bar": "Barra de título",
+	"clipchat.color.border": "Borde",
+	"clipchat.color.row_hover": "Resaltado de fila",
+	"clipchat.color.text": "Texto",
+	"clipchat.color.text_dim": "Texto atenuado",
+	"clipchat.color.pin": "Marcador de fijado",
+
+	"key.clipchat.config": "Abrir los ajustes de ClipChat"
+}

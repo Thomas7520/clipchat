@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "clipchat",
+	"version": "${version}",
+	"name": "ClipChat",
+	"description": "A client-side clipboard manager inside the Minecraft chat screen. Re-insert, pin and delete anything you have copied in game, and optionally browse the Windows clipboard history.",
+	"authors": [
+		"Thomas7520"
+	],
+	"contact": {
+		"homepage": "https://thomas7520.dev",
+		"sources": "https://github.com/Thomas7520/clipchat",
+		"issues": "https://github.com/Thomas7520/clipchat/issues"
+	},
+	"license": "CC-BY-NC-SA-4.0",
+	"icon": "assets/clipchat/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.thomas7520.clipchat.client.ClipChatClient"
+		],
+		"modmenu": [
+			"dev.thomas7520.clipchat.compat.ModMenuIntegration"
+		]
+	},
+	"mixins": [
+		{
+			"config": "clipchat.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

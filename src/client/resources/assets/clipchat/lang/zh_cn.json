@@ -1,0 +1,53 @@
+{
+	"clipchat.widget.title": "ClipChat",
+	"clipchat.widget.empty": "尚未复制任何内容",
+	"clipchat.tab.minecraft": "Minecraft",
+	"clipchat.tab.windows": "Windows",
+
+	"clipchat.state.loading": "正在读取……",
+	"clipchat.state.disabled_by_os": "Windows 剪贴板历史记录已关闭。请在 Windows 设置的“系统 > 剪贴板”中开启。",
+	"clipchat.state.access_denied": "Windows 拒绝提供历史记录。这通常是因为游戏窗口未处于活动状态。",
+	"clipchat.state.unsupported_os": "仅在 Windows 上可用。",
+	"clipchat.state.error": "无法读取 Windows 剪贴板历史记录。",
+
+	"clipchat.error.entry_missing": "该条目已不在历史记录中",
+	"clipchat.error.pin_limit_reached": "已达到置顶数量上限",
+	"clipchat.error.windows_action_failed": "Windows 拒绝了对其剪贴板历史记录的此项更改",
+
+	"clipchat.config.title": "ClipChat 设置",
+	"clipchat.config.theme": "主题",
+	"clipchat.config.theme.tooltip": "剪贴板面板使用的配色。你自行设置的任何颜色都会覆盖主题配色。",
+	"clipchat.config.visible": "显示面板",
+	"clipchat.config.visible.tooltip": "在聊天界面中显示剪贴板面板。关闭后将完全隐藏面板；你仍可通过 /clipchat 或 ClipChat 快捷键打开本设置。",
+	"clipchat.config.windows": "Windows 历史记录",
+	"clipchat.config.windows.tooltip": "默认关闭。开启后，面板会新增一个 Windows 标签页，实时读取你的 Windows 剪贴板历史记录。ClipChat 绝不会将该标签页中的任何内容写入磁盘。",
+	"clipchat.config.windows.unavailable": "仅在 Windows 上可用。",
+	"clipchat.config.capture": "记录复制内容",
+	"clipchat.config.capture.tooltip": "默认关闭。开启后，你在 Minecraft 中复制的文本会保存到本机的文件中，关闭游戏后依然存在。关闭此项可使面板在每次启动时保持为空。",
+	"clipchat.config.colors": "自定义颜色……",
+	"clipchat.config.max_unpinned": "最大条目数",
+	"clipchat.config.max_unpinned.tooltip": "保留多少条未置顶的条目。列表填满后会丢弃最旧的一条。取值范围 1 到 1000。",
+	"clipchat.config.max_pinned": "最大置顶数",
+	"clipchat.config.max_pinned.tooltip": "同时可置顶的条目数量。置顶条目绝不会被自动丢弃。取值范围 1 到 500。",
+	"clipchat.config.max_length": "最大长度",
+	"clipchat.config.max_length.tooltip": "超出此字符数的文本会在保存前被截短。取值范围 16 到 65536。",
+	"clipchat.config.save": "保存",
+	"clipchat.config.cancel": "取消",
+	"clipchat.config.reset": "重置为主题配色",
+	"clipchat.config.done": "完成",
+
+	"clipchat.theme.dark": "深色",
+	"clipchat.theme.light": "浅色",
+	"clipchat.theme.high_contrast": "高对比度",
+	"clipchat.theme.classic": "经典",
+
+	"clipchat.color.background": "背景",
+	"clipchat.color.title_bar": "标题栏",
+	"clipchat.color.border": "边框",
+	"clipchat.color.row_hover": "行高亮",
+	"clipchat.color.text": "文本",
+	"clipchat.color.text_dim": "次要文本",
+	"clipchat.color.pin": "置顶标记",
+
+	"key.clipchat.config": "打开 ClipChat 设置"
+}
