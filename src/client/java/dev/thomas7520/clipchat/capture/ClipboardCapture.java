@@ -13,20 +13,11 @@ import java.util.function.Supplier;
 public final class ClipboardCapture {
 	private final MutableClipboardHistory history;
 
-	private volatile boolean paused;
 	private volatile String suppressOnce;
 	private volatile Supplier<ClipboardSource> sourceResolver = () -> ClipboardSource.UNKNOWN;
 
 	public ClipboardCapture(MutableClipboardHistory history) {
 		this.history = history;
-	}
-
-	public boolean isPaused() {
-		return paused;
-	}
-
-	public void setPaused(boolean value) {
-		this.paused = value;
 	}
 
 	/**
@@ -44,7 +35,7 @@ public final class ClipboardCapture {
 
 	public void onMinecraftCopy(String text) {
 		try {
-			if (paused || text == null || text.isEmpty()) {
+			if (text == null || text.isEmpty()) {
 				return;
 			}
 

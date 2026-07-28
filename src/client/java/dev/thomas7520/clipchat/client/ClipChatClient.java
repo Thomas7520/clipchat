@@ -54,7 +54,7 @@ public class ClipChatClient implements ClientModInitializer {
 
 		configManager.addListener(current -> {
 			history.history().setLimits(current.limits());
-			clipboardCapture.setPaused(!current.captureEnabled());
+			history.setPersistent(current.captureEnabled());
 
 			if (!current.windowsHistoryEnabled()) {
 				windowsHistory.forget();

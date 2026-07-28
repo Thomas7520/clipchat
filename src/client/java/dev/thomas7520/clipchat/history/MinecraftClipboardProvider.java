@@ -56,6 +56,7 @@ public final class MinecraftClipboardProvider implements MutableClipboardHistory
 	});
 
 	private volatile boolean enabled = true;
+	private volatile boolean persistent;
 
 	public MinecraftClipboardProvider(HistoryStore store, HistoryLimits limits, Consumer<String> clipboardWriter) {
 		this.store = store;
@@ -72,7 +73,31 @@ public final class MinecraftClipboardProvider implements MutableClipboardHistory
 		notifyListeners();
 	}
 
+	/**
+	 * Sets whether the history is mirrored to disk. Entries are always kept in memory regardless.
+	 * Switching this off deletes the history file, so nothing is left behind for the next session.
+	 */
+	public void setPersistent(boolean value) {
+		if (persistent == value) {
+			return;
+		}
+
+		persistent = value;
+
+		if (value) {
+			scheduleSave();
+		} else {
+			io.execute(this::deleteStore);
+		}
+	}
+
+	/** Restores the saved history. Starts empty when persistence is off. */
 	public void load() {
+		if (!persistent) {
+			notifyListeners();
+			return;
+		}
+
 		try {
 			history.loadAll(store.load());
 			ClipChatLog.LOGGER.info("[ClipChat] Loaded {} clipboard entries", history.size());
@@ -165,8 +190,12 @@ public final class MinecraftClipboardProvider implements MutableClipboardHistory
 	public void close() {
 		io.shutdown();
 
-		// Writes inline; the executor is already shut down, so a debounced task would never run.
-		saveNow();
+		// Runs inline; the executor is already shut down, so a queued task would never run.
+		if (persistent) {
+			saveNow();
+		} else {
+			deleteStore();
+		}
 	}
 
 	private ActionResult mutate(ActionResult result) {
@@ -179,7 +208,7 @@ public final class MinecraftClipboardProvider implements MutableClipboardHistory
 	}
 
 	private void scheduleSave() {
-		if (!savePending.compareAndSet(false, true)) {
+		if (!persistent || !savePending.compareAndSet(false, true)) {
 			return;
 		}
 
@@ -194,10 +223,22 @@ public final class MinecraftClipboardProvider implements MutableClipboardHistory
 	}
 
 	private void saveNow() {
+		if (!persistent) {
+			return;
+		}
+
 		try {
 			store.save(history.snapshot());
 		} catch (IOException | RuntimeException e) {
 			ClipChatLog.LOGGER.warn("[ClipChat] Failed to save clipboard history", e);
+		}
+	}
+
+	private void deleteStore() {
+		try {
+			store.delete();
+		} catch (IOException | RuntimeException e) {
+			ClipChatLog.LOGGER.warn("[ClipChat] Failed to delete clipboard history file", e);
 		}
 	}
 

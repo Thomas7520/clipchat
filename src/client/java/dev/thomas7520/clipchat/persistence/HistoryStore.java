@@ -95,6 +95,11 @@ public final class HistoryStore {
 		return entries;
 	}
 
+	/** Removes the history file. Does nothing when it is already absent. */
+	public void delete() throws IOException {
+		Files.deleteIfExists(file);
+	}
+
 	public void save(List<ClipboardEntry> entries) throws IOException {
 		JsonObject root = new JsonObject();
 		root.addProperty("schemaVersion", SCHEMA_VERSION);
