@@ -4,7 +4,7 @@ import dev.thomas7520.clipchat.config.ClipChatConfig;
 import dev.thomas7520.clipchat.config.ColorSlot;
 import dev.thomas7520.clipchat.config.ConfigStore;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -63,16 +63,16 @@ public class ColorConfigScreen extends Screen {
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float tickDelta) {
-		super.extractRenderState(graphics, mouseX, mouseY, tickDelta);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float tickDelta) {
+		super.render(graphics, mouseX, mouseY, tickDelta);
 
 		int left = left();
-		graphics.centeredText(font, title, width / 2, 12, 0xFFFFFFFF);
+		graphics.drawCenteredString(font, title, width / 2, 12, 0xFFFFFFFF);
 
 		for (ColorSlot slot : ColorSlot.values()) {
 			int y = rowY(slot);
 			graphics.fill(left, y + 4, left + SWATCH_SIZE, y + 4 + SWATCH_SIZE, working.color(slot));
-			graphics.text(font, Component.translatable(slot.translationKey()), left + SWATCH_SIZE + 5, y + 5,
+			graphics.drawString(font, Component.translatable(slot.translationKey()), left + SWATCH_SIZE + 5, y + 5,
 					LABEL_COLOR);
 		}
 	}
@@ -85,7 +85,7 @@ public class ColorConfigScreen extends Screen {
 	public void onClose() {
 		applyBoxes();
 		onApply.accept(working);
-		minecraft.setScreenAndShow(parent);
+		minecraft.setScreen(parent);
 	}
 
 	private void resetAll() {

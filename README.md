@@ -36,15 +36,15 @@ clipboard history switched on in **Settings → System → Clipboard**.
 
 ## Installation
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.3 or newer for Minecraft 26.2.
-2. Download [Fabric API](https://modrinth.com/mod/fabric-api) 0.155.2+26.2 or newer and drop the jar
+1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.3 or newer for Minecraft 1.21.11.
+2. Download [Fabric API](https://modrinth.com/mod/fabric-api) 0.141.6+1.21.11 or newer and drop the jar
    into `.minecraft/mods/`.
 3. Download the ClipChat jar and drop it into `.minecraft/mods/` as well.
 4. Optionally install [Mod Menu](https://modrinth.com/mod/modmenu) if you want a settings button in
    the mod list.
 5. Launch the game with the Fabric profile.
 
-You need **Java 25** or newer. Recent Minecraft launchers install a suitable runtime automatically.
+You need **Java 21** or newer. Recent Minecraft launchers install a suitable runtime automatically.
 
 ## Configuration
 

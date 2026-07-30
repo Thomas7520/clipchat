@@ -13,8 +13,7 @@ import dev.thomas7520.clipchat.ui.model.WidgetGeometry;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -127,7 +126,7 @@ public final class ClipboardWidget {
 		return (red * 2126 + green * 7152 + blue * 722) / 10000 > 128;
 	}
 
-	public void extract(GuiGraphicsExtractor graphics, Font font, int screenWidth, int screenHeight,
+	public void render(GuiGraphics graphics, Font font, int screenWidth, int screenHeight,
 			int mouseX, int mouseY) {
 		if (hidden()) {
 			return;
@@ -140,10 +139,10 @@ public final class ClipboardWidget {
 
 		graphics.fill(x, y, x + width, y + visibleHeight, color(ColorSlot.BACKGROUND));
 		graphics.fill(x, y, x + width, y + TITLE_HEIGHT, color(ColorSlot.TITLE_BAR));
-		graphics.outline(x, y, width, visibleHeight, color(ColorSlot.BORDER));
+		graphics.renderOutline(x, y, width, visibleHeight, color(ColorSlot.BORDER));
 
 		int titleColor = color(ColorSlot.TEXT);
-		graphics.text(font, TITLE, x + PADDING, y + 2, titleColor, shadowSuits(titleColor));
+		graphics.drawString(font, TITLE, x + PADDING, y + 2, titleColor, shadowSuits(titleColor));
 
 		drawCollapseButton(graphics, collapseButtonX(x, width), y + 2);
 		icon(graphics, SETTINGS_ICON, settingsButtonX(x, width), y + 2, titleColor);
@@ -163,7 +162,7 @@ public final class ClipboardWidget {
 
 		if (entries.isEmpty()) {
 			graphics.enableScissor(x + 1, listTop, x + width - 1, listBottom);
-			graphics.textWithWordWrap(font, message(provider.state()), x + PADDING, listTop + PADDING,
+			graphics.drawWordWrap(font, message(provider.state()), x + PADDING, listTop + PADDING,
 					width - PADDING * 2, color(ColorSlot.TEXT_DIM));
 			graphics.disableScissor();
 			drawResizeGrip(graphics, x + width, y + visibleHeight);
@@ -215,25 +214,25 @@ public final class ClipboardWidget {
 		};
 	}
 
-	private void drawTabs(GuiGraphicsExtractor graphics, Font font, int x, int top, int width) {
+	private void drawTabs(GuiGraphics graphics, Font font, int x, int top, int width) {
 		int half = width / 2;
 		drawTab(graphics, font, TAB_MINECRAFT, x + 1, top, half - 1, source == ProviderId.MINECRAFT);
 		drawTab(graphics, font, TAB_WINDOWS, x + half, top, width - half - 1, source == ProviderId.WINDOWS);
 		graphics.fill(x + 1, top + TAB_HEIGHT - 1, x + width - 1, top + TAB_HEIGHT, color(ColorSlot.BORDER));
 	}
 
-	private void drawTab(GuiGraphicsExtractor graphics, Font font, Component label, int tabX, int top,
+	private void drawTab(GuiGraphics graphics, Font font, Component label, int tabX, int top,
 			int tabWidth, boolean selected) {
 		if (selected) {
 			graphics.fill(tabX, top, tabX + tabWidth, top + TAB_HEIGHT - 1, color(ColorSlot.ROW_HOVER));
 		}
 
 		int labelColor = selected ? color(ColorSlot.TEXT) : color(ColorSlot.TEXT_DIM);
-		graphics.text(font, label, tabX + (tabWidth - font.width(label)) / 2, top + 2,
+		graphics.drawString(font, label, tabX + (tabWidth - font.width(label)) / 2, top + 2,
 				labelColor, shadowSuits(labelColor));
 	}
 
-	private void drawRow(GuiGraphicsExtractor graphics, Font font, ClipboardEntry entry,
+	private void drawRow(GuiGraphics graphics, Font font, ClipboardEntry entry,
 			int x, int rowY, int contentRight, boolean hovered) {
 		if (hovered) {
 			graphics.fill(x + 1, rowY, contentRight, rowY + ROW_HEIGHT, color(ColorSlot.ROW_HOVER));
@@ -254,7 +253,7 @@ public final class ClipboardWidget {
 		if (hovered && font.width(text) > textRight - textX) {
 			marquee(graphics, font, text, textX, textRight, rowY, textColor);
 		} else {
-			graphics.text(font, font.plainSubstrByWidth(text, textRight - textX), textX, rowY + 2,
+			graphics.drawString(font, font.plainSubstrByWidth(text, textRight - textX), textX, rowY + 2,
 					textColor, shadowSuits(textColor));
 		}
 
@@ -269,7 +268,7 @@ public final class ClipboardWidget {
 	}
 
 	/** Sweeps text too wide for its row back and forth, pausing at each end. */
-	private void marquee(GuiGraphicsExtractor graphics, Font font, String text,
+	private void marquee(GuiGraphics graphics, Font font, String text,
 			int left, int right, int rowY, int textColor) {
 		int overflow = font.width(text) - (right - left);
 		double seconds = System.nanoTime() / 1_000_000_000.0;
@@ -277,7 +276,7 @@ public final class ClipboardWidget {
 		double phase = Math.sin(Math.PI / 2 * Math.cos(Math.PI * 2 * seconds / period)) / 2.0 + 0.5;
 
 		graphics.enableScissor(left, rowY, right, rowY + ROW_HEIGHT);
-		graphics.text(font, text, left - (int) Math.round(phase * overflow), rowY + 2,
+		graphics.drawString(font, text, left - (int) Math.round(phase * overflow), rowY + 2,
 				textColor, shadowSuits(textColor));
 		graphics.disableScissor();
 	}
@@ -288,12 +287,12 @@ public final class ClipboardWidget {
 	}
 
 	/** Draws a glyph. The textures are white masks, so {@code tint} becomes the drawn colour. */
-	private static void icon(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int tint) {
+	private static void icon(GuiGraphics graphics, Identifier texture, int x, int y, int tint) {
 		graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, ICON_SIZE, ICON_SIZE,
-				ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, tint);
+				ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, tint);
 	}
 
-	private void drawCollapseButton(GuiGraphicsExtractor graphics, int buttonX, int buttonY) {
+	private void drawCollapseButton(GuiGraphics graphics, int buttonX, int buttonY) {
 		int tint = color(ColorSlot.TEXT);
 		// Two pixels thick, so the bar centres exactly in an even-sized box.
 		int middleY = buttonY + ICON_SIZE / 2 - 1;
@@ -305,7 +304,7 @@ public final class ClipboardWidget {
 		}
 	}
 
-	private void drawDeleteIcon(GuiGraphicsExtractor graphics, int iconX, int iconY) {
+	private void drawDeleteIcon(GuiGraphics graphics, int iconX, int iconY) {
 		int tint = color(ColorSlot.TEXT_DIM);
 
 		for (int step = 0; step < 6; step++) {
@@ -314,7 +313,7 @@ public final class ClipboardWidget {
 		}
 	}
 
-	private void drawScrollbar(GuiGraphicsExtractor graphics, int x, int width,
+	private void drawScrollbar(GuiGraphics graphics, int x, int width,
 			int listTop, int listBottom, int count) {
 		int listHeight = listBottom - listTop;
 
@@ -331,7 +330,7 @@ public final class ClipboardWidget {
 		graphics.fill(trackX, thumbY, trackX + SCROLLBAR_WIDTH, thumbY + thumbHeight, color(ColorSlot.TEXT_DIM));
 	}
 
-	private void drawResizeGrip(GuiGraphicsExtractor graphics, int right, int bottom) {
+	private void drawResizeGrip(GuiGraphics graphics, int right, int bottom) {
 		int tint = color(ColorSlot.TEXT_DIM);
 
 		for (int step = 1; step <= 3; step++) {
@@ -572,13 +571,13 @@ public final class ClipboardWidget {
 	 * Keyboard equivalents for every mouse action. All require Control: the chat box keeps focus
 	 * while the panel is open, and unmodified keys belong to it.
 	 */
-	public boolean keyPressed(KeyEvent event, int screenHeight) {
-		if (hidden() || geometry.collapsed() || !event.hasControlDownWithQuirk()) {
+	public boolean keyPressed(int keyCode, int modifiers, int screenHeight) {
+		if (hidden() || geometry.collapsed() || (modifiers & InputConstants.MOD_CONTROL) == 0) {
 			return false;
 		}
 
-		if (tabsVisible() && (event.isLeft() || event.isRight())) {
-			selectSource(event.isLeft() ? ProviderId.MINECRAFT : ProviderId.WINDOWS);
+		if (tabsVisible() && (keyCode == InputConstants.KEY_LEFT || keyCode == InputConstants.KEY_RIGHT)) {
+			selectSource(keyCode == InputConstants.KEY_LEFT ? ProviderId.MINECRAFT : ProviderId.WINDOWS);
 			return true;
 		}
 
@@ -588,8 +587,8 @@ public final class ClipboardWidget {
 			return false;
 		}
 
-		if (event.isUp() || event.isDown()) {
-			selected = Math.clamp(selected + (event.isDown() ? 1 : -1), 0, entries.size() - 1);
+		if (keyCode == InputConstants.KEY_UP || keyCode == InputConstants.KEY_DOWN) {
+			selected = Math.clamp(selected + (keyCode == InputConstants.KEY_DOWN ? 1 : -1), 0, entries.size() - 1);
 			scrollIntoView(screenHeight, entries.size());
 			return true;
 		}
@@ -600,11 +599,11 @@ public final class ClipboardWidget {
 
 		ClipboardEntry entry = entries.get(selected);
 
-		if (event.isConfirmation()) {
+		if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER) {
 			onInsert.accept(entry.text());
-		} else if (event.key() == InputConstants.KEY_DELETE) {
+		} else if (keyCode == InputConstants.KEY_DELETE) {
 			active().delete(entry.id());
-		} else if (event.key() == InputConstants.KEY_P && canPin()) {
+		} else if (keyCode == InputConstants.KEY_P && canPin()) {
 			togglePin(entry);
 		} else {
 			return false;
