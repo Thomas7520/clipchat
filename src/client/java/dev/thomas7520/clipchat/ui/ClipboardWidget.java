@@ -14,7 +14,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -127,7 +126,7 @@ public final class ClipboardWidget {
 		return (red * 2126 + green * 7152 + blue * 722) / 10000 > 128;
 	}
 
-	public void extract(GuiGraphicsExtractor graphics, Font font, int screenWidth, int screenHeight,
+	public void render(GuiGraphicsExtractor graphics, Font font, int screenWidth, int screenHeight,
 			int mouseX, int mouseY) {
 		if (hidden()) {
 			return;
@@ -290,7 +289,7 @@ public final class ClipboardWidget {
 	/** Draws a glyph. The textures are white masks, so {@code tint} becomes the drawn colour. */
 	private static void icon(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int tint) {
 		graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, ICON_SIZE, ICON_SIZE,
-				ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, tint);
+				ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, tint);
 	}
 
 	private void drawCollapseButton(GuiGraphicsExtractor graphics, int buttonX, int buttonY) {
@@ -572,13 +571,13 @@ public final class ClipboardWidget {
 	 * Keyboard equivalents for every mouse action. All require Control: the chat box keeps focus
 	 * while the panel is open, and unmodified keys belong to it.
 	 */
-	public boolean keyPressed(KeyEvent event, int screenHeight) {
-		if (hidden() || geometry.collapsed() || !event.hasControlDownWithQuirk()) {
+	public boolean keyPressed(int keyCode, int modifiers, int screenHeight) {
+		if (hidden() || geometry.collapsed() || (modifiers & InputConstants.MOD_CONTROL) == 0) {
 			return false;
 		}
 
-		if (tabsVisible() && (event.isLeft() || event.isRight())) {
-			selectSource(event.isLeft() ? ProviderId.MINECRAFT : ProviderId.WINDOWS);
+		if (tabsVisible() && (keyCode == InputConstants.KEY_LEFT || keyCode == InputConstants.KEY_RIGHT)) {
+			selectSource(keyCode == InputConstants.KEY_LEFT ? ProviderId.MINECRAFT : ProviderId.WINDOWS);
 			return true;
 		}
 
@@ -588,8 +587,8 @@ public final class ClipboardWidget {
 			return false;
 		}
 
-		if (event.isUp() || event.isDown()) {
-			selected = Math.clamp(selected + (event.isDown() ? 1 : -1), 0, entries.size() - 1);
+		if (keyCode == InputConstants.KEY_UP || keyCode == InputConstants.KEY_DOWN) {
+			selected = Math.clamp(selected + (keyCode == InputConstants.KEY_DOWN ? 1 : -1), 0, entries.size() - 1);
 			scrollIntoView(screenHeight, entries.size());
 			return true;
 		}
@@ -600,11 +599,11 @@ public final class ClipboardWidget {
 
 		ClipboardEntry entry = entries.get(selected);
 
-		if (event.isConfirmation()) {
+		if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER) {
 			onInsert.accept(entry.text());
-		} else if (event.key() == InputConstants.KEY_DELETE) {
+		} else if (keyCode == InputConstants.KEY_DELETE) {
 			active().delete(entry.id());
-		} else if (event.key() == InputConstants.KEY_P && canPin()) {
+		} else if (keyCode == InputConstants.KEY_P && canPin()) {
 			togglePin(entry);
 		} else {
 			return false;

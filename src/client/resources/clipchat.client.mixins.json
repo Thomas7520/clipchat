@@ -1,9 +1,10 @@
 {
 	"required": true,
 	"package": "dev.thomas7520.clipchat.client.mixin",
-	"compatibilityLevel": "JAVA_25",
+	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"KeyboardHandlerMixin"
+		"KeyboardHandlerMixin",
+		"ScreenInsertAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

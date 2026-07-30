@@ -47,29 +47,29 @@ public class ClipChatConfigScreen extends Screen {
 		top = TOP_MARGIN + Math.max(0, (height - BOTTOM_BAR - TOP_MARGIN - CONTENT_HEIGHT) / 2);
 
 		addRenderableWidget(CycleButton
-				.builder(theme -> Component.translatable(theme.translationKey()), working.theme())
+				.builder((ThemePreset theme) -> Component.translatable(theme.translationKey()), working.theme())
 				.withValues(ThemePreset.values())
-				.withTooltip(_ -> Tooltip.create(Component.translatable("clipchat.config.theme.tooltip")))
+				.withTooltip(button -> Tooltip.create(Component.translatable("clipchat.config.theme.tooltip")))
 				.create(left, rowY(0), ROW_WIDTH, 20, Component.translatable("clipchat.config.theme"),
-						(_, value) -> working = working.withTheme(value)));
+						(button, value) -> working = working.withTheme(value)));
 
 		addRenderableWidget(CycleButton.onOffBuilder(working.widgetVisible())
-				.withTooltip(_ -> Tooltip.create(Component.translatable("clipchat.config.visible.tooltip")))
+				.withTooltip(button -> Tooltip.create(Component.translatable("clipchat.config.visible.tooltip")))
 				.create(left, rowY(1), ROW_WIDTH, 20, Component.translatable("clipchat.config.visible"),
-						(_, value) -> working = working.withWidgetVisible(value)));
+						(button, value) -> working = working.withWidgetVisible(value)));
 
 		addRenderableWidget(CycleButton.onOffBuilder(working.captureEnabled())
-				.withTooltip(_ -> Tooltip.create(Component.translatable("clipchat.config.capture.tooltip")))
+				.withTooltip(button -> Tooltip.create(Component.translatable("clipchat.config.capture.tooltip")))
 				.create(left, rowY(2), ROW_WIDTH, 20, Component.translatable("clipchat.config.capture"),
-						(_, value) -> working = working.withCaptureEnabled(value)));
+						(button, value) -> working = working.withCaptureEnabled(value)));
 
 		CycleButton<Boolean> windows = addRenderableWidget(CycleButton
 				.onOffBuilder(working.windowsHistoryEnabled())
-				.withTooltip(_ -> Tooltip.create(Component.translatable(WindowsClipboardProvider.osSupported()
+				.withTooltip(button -> Tooltip.create(Component.translatable(WindowsClipboardProvider.osSupported()
 						? "clipchat.config.windows.tooltip"
 						: "clipchat.config.windows.unavailable")))
 				.create(left, rowY(3), ROW_WIDTH, 20, Component.translatable("clipchat.config.windows"),
-						(_, value) -> working = working.withWindowsHistoryEnabled(value)));
+						(button, value) -> working = working.withWindowsHistoryEnabled(value)));
 
 		// Off Windows the row stays visible but disabled, keeping the layout stable.
 		windows.active = WindowsClipboardProvider.osSupported();
@@ -79,19 +79,19 @@ public class ClipChatConfigScreen extends Screen {
 		lengthBox = numberBox(6, working.maxEntryLength(), "clipchat.config.max_length.tooltip");
 
 		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.colors"),
-						_ -> {
+						button -> {
 							captureBoxes();
-							minecraft.setScreenAndShow(
+							minecraft.setScreen(
 									new ColorConfigScreen(this, working, updated -> working = updated));
 						})
 				.bounds(left, rowY(7), ROW_WIDTH, 20)
 				.build());
 
-		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.save"), _ -> applyAndClose())
+		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.save"), button -> applyAndClose())
 				.bounds(width / 2 - 102, height - 28, 100, 20)
 				.build());
 
-		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.cancel"), _ -> onClose())
+		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.cancel"), button -> onClose())
 				.bounds(width / 2 + 2, height - 28, 100, 20)
 				.build());
 	}
@@ -109,7 +109,7 @@ public class ClipChatConfigScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		minecraft.setScreenAndShow(parent);
+		minecraft.setScreen(parent);
 	}
 
 	/** Draws a row label at the left edge, with the matching field right-aligned against it. */

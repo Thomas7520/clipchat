@@ -36,8 +36,8 @@ clipboard history switched on in **Settings → System → Clipboard**.
 
 ## Installation
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.3 or newer for Minecraft 26.2.
-2. Download [Fabric API](https://modrinth.com/mod/fabric-api) 0.155.2+26.2 or newer and drop the jar
+1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.3 or newer for Minecraft 26.1.2.
+2. Download [Fabric API](https://modrinth.com/mod/fabric-api) 0.155.2+26.1.2 or newer and drop the jar
    into `.minecraft/mods/`.
 3. Download the ClipChat jar and drop it into `.minecraft/mods/` as well.
 4. Optionally install [Mod Menu](https://modrinth.com/mod/modmenu) if you want a settings button in

@@ -17,6 +17,7 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 	maven { url = "https://maven.terraformersmc.com/releases" }
+	mavenCentral()
 }
 
 loom {
@@ -36,9 +37,14 @@ dependencies {
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation "net.fabricmc.fabric-api:fabric-command-api-v2:3.0.5+e2bdee784c"
+	implementation "net.fabricmc.fabric-api:fabric-key-mapping-api-v1:2.0.4+e2bdee784c"
+	implementation "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:4.1.1+df84eb3d4c"
+	implementation "net.fabricmc.fabric-api:fabric-screen-api-v1:5.1.0+981dd9b24c"
 
 	clientImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	clientImplementation "net.java.dev.jna:jna:${project.jna_version}"
+	include "net.java.dev.jna:jna:${project.jna_version}"
 
 	// The tested classes live in the client source set, which the test source set does not see
 	// by default under splitEnvironmentSourceSets().

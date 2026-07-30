@@ -3,6 +3,7 @@ package dev.thomas7520.clipchat.ui;
 import dev.thomas7520.clipchat.clipboard.model.ClipboardSource;
 import dev.thomas7520.clipchat.clipboard.provider.ClipboardProvider;
 import dev.thomas7520.clipchat.config.ClipChatConfig;
+import dev.thomas7520.clipchat.client.mixin.ScreenInsertAccessor;
 import dev.thomas7520.clipchat.history.MinecraftClipboardProvider;
 
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -65,27 +66,27 @@ public final class ChatWidgetController {
 
 		widget.onChatOpened();
 
-		ScreenEvents.afterExtract(screen).register((rendered, graphics, mouseX, mouseY, tickDelta) ->
-				widget.extract(graphics, rendered.getFont(), rendered.width, rendered.height, mouseX, mouseY));
+		ScreenEvents.afterExtract(screen).register((rendered, graphics, mouseX, mouseY, tickDelta) -> {
+			widget.mouseDragged(mouseX, mouseY, rendered.width, rendered.height);
+			widget.render(graphics, client.font, rendered.width, rendered.height, mouseX, mouseY);
+		});
 
 		ScreenMouseEvents.allowMouseClick(screen).register((clicked, event) ->
 				!widget.mouseClicked(event.x(), event.y(), event.button(), clicked.width, clicked.height));
 
-		ScreenMouseEvents.allowMouseDrag(screen).register((dragged, event, deltaX, deltaY) ->
-				!widget.mouseDragged(event.x(), event.y(), dragged.width, dragged.height));
-
-		ScreenMouseEvents.allowMouseRelease(screen).register((released, event) -> !widget.mouseReleased());
+		ScreenMouseEvents.allowMouseRelease(screen).register((released, event) ->
+				!widget.mouseReleased());
 
 		ScreenMouseEvents.allowMouseScroll(screen).register((scrolled, mouseX, mouseY, horizontal, vertical) ->
 				!widget.mouseScrolled(mouseX, mouseY, vertical, scrolled.width, scrolled.height));
 
 		ScreenKeyboardEvents.allowKeyPress(screen).register((pressed, event) ->
-				!widget.keyPressed(event, pressed.height));
+				!widget.keyPressed(event.key(), event.modifiers(), pressed.height));
 	}
 
 	private void insertIntoChat(String text) {
 		if (currentScreen.get() instanceof ChatScreen chat) {
-			chat.insertText(text.replace('\n', ' '), false);
+			((ScreenInsertAccessor) chat).clipchat$insertText(text.replace('\n', ' '), false);
 		}
 	}
 }

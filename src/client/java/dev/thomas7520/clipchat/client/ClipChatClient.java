@@ -16,8 +16,8 @@ import dev.thomas7520.clipchat.windows.WindowsClipboardProvider;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -66,14 +66,14 @@ public class ClipChatClient implements ClientModInitializer {
 		ChatWidgetController controller = new ChatWidgetController(history, windowsHistory,
 				new UiStateStore(directory.resolve("ui.json")), configManager::current,
 				parent -> Minecraft.getInstance().execute(() ->
-						Minecraft.getInstance().setScreenAndShow(new ClipChatConfigScreen(parent, configManager))));
+						Minecraft.getInstance().setScreen(new ClipChatConfigScreen(parent, configManager))));
 		clipboardCapture.setSourceResolver(controller::currentSource);
 		controller.register();
 
 		registerConfigKey();
 		registerCommand();
 
-		ClientLifecycleEvents.CLIENT_STOPPING.register(_ -> {
+		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
 			controller.flush();
 			history.close();
 			windowsHistory.close();
@@ -94,8 +94,8 @@ public class ClipChatClient implements ClientModInitializer {
 	}
 
 	private static void registerCommand() {
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(
-				ClientCommands.literal("clipchat").executes(_ -> {
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(
+				ClientCommands.literal("clipchat").executes(context -> {
 					Minecraft client = Minecraft.getInstance();
 					client.execute(() -> openConfig(client));
 					return 1;
@@ -104,7 +104,7 @@ public class ClipChatClient implements ClientModInitializer {
 
 	// Opens with a null parent, so closing the settings screen returns to the game.
 	private static void openConfig(Minecraft client) {
-		client.setScreenAndShow(new ClipChatConfigScreen(null, config));
+		client.setScreen(new ClipChatConfigScreen(null, config));
 	}
 
 	public static MinecraftClipboardProvider history() {
