@@ -288,8 +288,7 @@ public final class ClipboardWidget {
 
 	/** Draws a glyph. The textures are white masks, so {@code tint} becomes the drawn colour. */
 	private static void icon(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int tint) {
-		graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, ICON_SIZE, ICON_SIZE,
-				ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, tint);
+		graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, ICON_SIZE, ICON_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, tint);
 	}
 
 	private void drawCollapseButton(GuiGraphicsExtractor graphics, int buttonX, int buttonY) {
