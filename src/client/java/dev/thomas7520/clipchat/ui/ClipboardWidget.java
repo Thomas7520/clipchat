@@ -286,14 +286,26 @@ public final class ClipboardWidget {
 	}
 
 	/** Draws a glyph. The textures are white masks, so {@code tint} becomes the drawn colour. */
-	private static void icon(GuiGraphics graphics, ResourceLocation texture, int x, int y, int tint) {
-		graphics.setColor(((tint >> 16) & 0xFF) / 255.0F, ((tint >> 8) & 0xFF) / 255.0F,
-				(tint & 0xFF) / 255.0F, ((tint >>> 24) & 0xFF) / 255.0F);
-		graphics.blit(texture, x, y, 0.0F, 0.0F, ICON_SIZE, ICON_SIZE,
-				ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
-		graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-	}
+	/** Draws the full white-mask texture scaled to ICON_SIZE.
+	 *  {@code tint} uses 0xAARRGGBB.
+	 */
+	private static void icon(
+			GuiGraphics graphics,
+			ResourceLocation texture,
+			int x,
+			int y,
+			int tint
+	) {
+		float red   = ((tint >>> 16) & 0xFF) / 255.0F;
+		float green = ((tint >>> 8)  & 0xFF) / 255.0F;
+		float blue  = (tint & 0xFF) / 255.0F;
+		float alpha = ((tint >>> 24) & 0xFF) / 255.0F;
 
+		graphics.setColor(red, green, blue, alpha);
+		graphics.blit(texture, x, y, ICON_SIZE, ICON_SIZE, 0.0F, 0.0F, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
+	    graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+	}
 	private void drawCollapseButton(GuiGraphics graphics, int buttonX, int buttonY) {
 		int tint = color(ColorSlot.TEXT);
 		// Two pixels thick, so the bar centres exactly in an even-sized box.
