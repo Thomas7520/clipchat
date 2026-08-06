@@ -377,7 +377,8 @@ public final class ClipboardWidget {
 	}
 
 	private static int thumbHeight(int count, int listHeight) {
-		return Math.clamp((long) listHeight * listHeight / (count * ROW_HEIGHT), MIN_THUMB_HEIGHT, listHeight);
+		long scaledHeight = (long) listHeight * listHeight / (count * ROW_HEIGHT);
+		return (int) Math.max(MIN_THUMB_HEIGHT, Math.min(scaledHeight, listHeight));
 	}
 
 	/** The right edge available to rows, reduced by the scrollbar only when the list overflows. */
@@ -602,7 +603,7 @@ public final class ClipboardWidget {
 		}
 
 		if (keyCode == InputConstants.KEY_UP || keyCode == InputConstants.KEY_DOWN) {
-			selected = Math.clamp(selected + (keyCode == InputConstants.KEY_DOWN ? 1 : -1), 0, entries.size() - 1);
+			selected = clamp(selected + (keyCode == InputConstants.KEY_DOWN ? 1 : -1), 0, entries.size() - 1);
 			scrollIntoView(screenHeight, entries.size());
 			return true;
 		}
@@ -634,7 +635,7 @@ public final class ClipboardWidget {
 		int highest = rowTop + ROW_HEIGHT - listHeight;
 
 		// When the panel is shorter than one row the bounds invert; the row top takes precedence.
-		scroll = highest > rowTop ? rowTop : Math.clamp(scroll, highest, rowTop);
+		scroll = highest > rowTop ? rowTop : clamp(scroll, highest, rowTop);
 		clampScroll(count, listHeight);
 	}
 
@@ -654,6 +655,10 @@ public final class ClipboardWidget {
 	}
 
 	private void clampScroll(int count, int listHeight) {
-		scroll = Math.clamp(scroll, 0, maxScroll(count, listHeight));
+		scroll = clamp(scroll, 0, maxScroll(count, listHeight));
+	}
+
+	private static int clamp(int value, int min, int max) {
+		return Math.max(min, Math.min(value, max));
 	}
 }

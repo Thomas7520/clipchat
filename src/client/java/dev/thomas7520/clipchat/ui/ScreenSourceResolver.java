@@ -17,13 +17,22 @@ public final class ScreenSourceResolver {
 	}
 
 	public static ClipboardSource sourceFor(Screen screen) {
-		return switch (screen) {
-			case null -> ClipboardSource.UNKNOWN;
-			case ChatScreen ignored -> ClipboardSource.CHAT_INPUT;
-			case BookEditScreen ignored -> ClipboardSource.BOOK;
-			case AbstractSignEditScreen ignored -> ClipboardSource.SIGN;
-			case AbstractCommandBlockEditScreen ignored -> ClipboardSource.COMMAND_SCREEN;
-			default -> ClipboardSource.UNKNOWN;
-		};
+		if (screen instanceof ChatScreen) {
+			return ClipboardSource.CHAT_INPUT;
+		}
+
+		if (screen instanceof BookEditScreen) {
+			return ClipboardSource.BOOK;
+		}
+
+		if (screen instanceof AbstractSignEditScreen) {
+			return ClipboardSource.SIGN;
+		}
+
+		if (screen instanceof AbstractCommandBlockEditScreen) {
+			return ClipboardSource.COMMAND_SCREEN;
+		}
+
+		return ClipboardSource.UNKNOWN;
 	}
 }

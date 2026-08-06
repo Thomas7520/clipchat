@@ -20,8 +20,8 @@ public record WidgetGeometry(Anchor anchor, int offsetX, int offsetY, int width,
 
 		offsetX = Math.max(0, offsetX);
 		offsetY = Math.max(0, offsetY);
-		width = Math.clamp(width, MIN_WIDTH, MAX_WIDTH);
-		height = Math.clamp(height, MIN_HEIGHT, MAX_HEIGHT);
+		width = clamp(width, MIN_WIDTH, MAX_WIDTH);
+		height = clamp(height, MIN_HEIGHT, MAX_HEIGHT);
 	}
 
 	public int visibleHeight(int titleHeight) {
@@ -67,6 +67,10 @@ public record WidgetGeometry(Anchor anchor, int offsetX, int offsetY, int width,
 	}
 
 	private static int clamp(int value, int max) {
-		return max <= 0 ? 0 : Math.clamp(value, 0, max);
+		return max <= 0 ? 0 : clamp(value, 0, max);
+	}
+
+	private static int clamp(int value, int min, int max) {
+		return Math.max(min, Math.min(value, max));
 	}
 }
