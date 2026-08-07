@@ -75,7 +75,7 @@ public class ClipChatClient {
 		ChatWidgetController controller = new ChatWidgetController(history, windowsHistory,
 				new UiStateStore(directory.resolve("ui.json")), configManager::current,
 				parent -> Minecraft.getInstance().execute(() ->
-						Minecraft.getInstance().setScreenAndShow(new ClipChatConfigScreen(parent, configManager))));
+						Minecraft.getInstance().setScreen(new ClipChatConfigScreen(parent, configManager))));
 		clipboardCapture.setSourceResolver(controller::currentSource);
 		controller.register();
 
@@ -123,7 +123,7 @@ public class ClipChatClient {
 
 	// Opens with a null parent, so closing the settings screen returns to the game.
 	private static void openConfig(Minecraft client) {
-		client.setScreenAndShow(new ClipChatConfigScreen(null, config));
+		client.setScreen(new ClipChatConfigScreen(null, config));
 	}
 
 	public static MinecraftClipboardProvider history() {

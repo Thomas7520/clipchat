@@ -85,7 +85,7 @@ public class ColorConfigScreen extends Screen {
 	public void onClose() {
 		applyBoxes();
 		onApply.accept(working);
-		minecraft.setScreenAndShow(parent);
+		minecraft.setScreen(parent);
 	}
 
 	private void resetAll() {

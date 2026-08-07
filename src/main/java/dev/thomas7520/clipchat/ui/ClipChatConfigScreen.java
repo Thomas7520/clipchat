@@ -81,7 +81,7 @@ public class ClipChatConfigScreen extends Screen {
 		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.colors"),
 						_ -> {
 							captureBoxes();
-							minecraft.setScreenAndShow(
+							minecraft.setScreen(
 									new ColorConfigScreen(this, working, updated -> working = updated));
 						})
 				.bounds(left, rowY(7), ROW_WIDTH, 20)
@@ -109,7 +109,7 @@ public class ClipChatConfigScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		minecraft.setScreenAndShow(parent);
+		minecraft.setScreen(parent);
 	}
 
 	/** Draws a row label at the left edge, with the matching field right-aligned against it. */

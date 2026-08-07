@@ -26,7 +26,7 @@ repositories {
 base {
     archivesName = "${minecraft_version}-${mod_id}-neoforged"
 }
-// Minecraft 26.2 uses Java 25.
+// Minecraft 26.1.2 uses Java 25.
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()
