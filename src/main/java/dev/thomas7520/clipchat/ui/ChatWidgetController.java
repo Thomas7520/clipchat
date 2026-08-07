@@ -4,10 +4,11 @@ import dev.thomas7520.clipchat.clipboard.model.ClipboardSource;
 import dev.thomas7520.clipchat.clipboard.provider.ClipboardProvider;
 import dev.thomas7520.clipchat.config.ClipChatConfig;
 import dev.thomas7520.clipchat.history.MinecraftClipboardProvider;
+import dev.thomas7520.clipchat.client.mixin.ChatScreenInvoker;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -67,7 +68,7 @@ public final class ChatWidgetController {
 			return;
 		}
 
-		widget.extract(event.getGuiGraphics(), screen.getFont(), screen.width, screen.height,
+		widget.extract(event.getGuiGraphics(), Minecraft.getInstance().font, screen.width, screen.height,
 				event.getMouseX(), event.getMouseY());
 	}
 
@@ -100,7 +101,7 @@ public final class ChatWidgetController {
 
 	private void onKeyPressed(ScreenEvent.KeyPressed.Pre event) {
 		if (event.getScreen() instanceof ChatScreen screen
-				&& widget.keyPressed(new KeyEvent(event.getKeyCode(), event.getScanCode(), event.getModifiers()), screen.height)) {
+				&& widget.keyPressed(event.getKeyCode(), screen.height)) {
 			event.setCanceled(true);
 		}
 	}
@@ -115,7 +116,7 @@ public final class ChatWidgetController {
 
 	private void insertIntoChat(String text) {
 		if (currentScreen.get() instanceof ChatScreen chat) {
-			chat.insertText(text.replace('\n', ' '), false);
+			((ChatScreenInvoker) chat).clipchat$insertText(text.replace('\n', ' '), false);
 		}
 	}
 }

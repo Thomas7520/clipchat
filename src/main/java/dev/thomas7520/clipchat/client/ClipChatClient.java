@@ -31,6 +31,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
 
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 @Mod(value = "clipchat", dist = Dist.CLIENT)
 public class ClipChatClient {
@@ -82,15 +83,18 @@ public class ClipChatClient {
 		this.history = history;
 		this.windowsHistory = windowsHistory;
 		this.controller = controller;
-		this.openConfigKey = new KeyMapping("key.clipchat.config", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+		this.openConfigKey = new KeyMapping("key.clipchat.config", InputConstants.UNKNOWN.getValue(), KeyMapping.CATEGORY_MISC);
 
 		modEventBus.addListener(this::onRegisterKeyMappings);
 		NeoForge.EVENT_BUS.addListener(this::onClientTick);
 		NeoForge.EVENT_BUS.addListener(this::onRegisterClientCommands);
 		NeoForge.EVENT_BUS.addListener(this::onGameShuttingDown);
 
-		modContainer.registerExtensionPoint(IConfigScreenFactory.class,
-				(ignoredContainer, parent) -> new ClipChatConfigScreen(parent, configManager));
+		modContainer.registerExtensionPoint(
+				IConfigScreenFactory.class,
+				(Supplier<IConfigScreenFactory>) () ->
+						(container, parent) -> new ClipChatConfigScreen(parent, configManager)
+		);
 
 		ClipChatLog.LOGGER.info("[ClipChat] Client initialised");
 	}

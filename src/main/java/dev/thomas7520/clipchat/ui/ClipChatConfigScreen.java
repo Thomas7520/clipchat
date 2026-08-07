@@ -47,11 +47,20 @@ public class ClipChatConfigScreen extends Screen {
 		top = TOP_MARGIN + Math.max(0, (height - BOTTOM_BAR - TOP_MARGIN - CONTENT_HEIGHT) / 2);
 
 		addRenderableWidget(CycleButton
-				.builder(theme -> Component.translatable(theme.translationKey()), working.theme())
+				.<ThemePreset>builder(theme ->
+						Component.translatable(theme.translationKey()))
+				.withInitialValue(working.theme())
 				.withValues(ThemePreset.values())
-				.withTooltip(value -> Tooltip.create(Component.translatable("clipchat.config.theme.tooltip")))
-				.create(left, rowY(0), ROW_WIDTH, 20, Component.translatable("clipchat.config.theme"),
-						(button, value) -> working = working.withTheme(value)));
+				.withTooltip(value -> Tooltip.create(
+						Component.translatable("clipchat.config.theme.tooltip")))
+				.create(
+						left,
+						rowY(0),
+						ROW_WIDTH,
+						20,
+						Component.translatable("clipchat.config.theme"),
+						(button, value) -> working = working.withTheme(value)
+				));
 
 		addRenderableWidget(CycleButton.onOffBuilder(working.widgetVisible())
 				.withTooltip(value -> Tooltip.create(Component.translatable("clipchat.config.visible.tooltip")))
