@@ -36,13 +36,9 @@ clipboard history switched on in **Settings → System → Clipboard**.
 
 ## Installation
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.3 or newer for Minecraft 26.2.
-2. Download [Fabric API](https://modrinth.com/mod/fabric-api) 0.155.2+26.2 or newer and drop the jar
-   into `.minecraft/mods/`.
-3. Download the ClipChat jar and drop it into `.minecraft/mods/` as well.
-4. Optionally install [Mod Menu](https://modrinth.com/mod/modmenu) if you want a settings button in
-   the mod list.
-5. Launch the game with the Fabric profile.
+1. Install [NeoForge](https://neoforged.net/) 26.2.0.48-beta or newer in the Minecraft 26.2 line.
+2. Download the ClipChat jar and drop it into `.minecraft/mods/`.
+3. Launch the game with the NeoForge profile.
 
 You need **Java 25** or newer. Recent Minecraft launchers install a suitable runtime automatically.
 
@@ -52,7 +48,7 @@ Settings can be reached in three ways:
 
 - the gear icon in the panel's title bar,
 - the `/clipchat` command,
-- Mod Menu, if it is installed,
+- the ClipChat entry in NeoForge's **Mods** screen,
 - or the **Open ClipChat settings** keybind (unbound by default : assign it under
   **Options → Controls → Key Binds**).
 

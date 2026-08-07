@@ -1,0 +1,24 @@
+license="${mod_license}"
+issueTrackerURL="https://github.com/Thomas7520/clipchat/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+displayURL="https://thomas7520.dev"
+logoFile="assets/clipchat/icon.png"
+authors="Thomas7520"
+description='''
+A client-side clipboard manager inside the Minecraft chat screen. Re-insert, pin and delete anything you have copied in game, and optionally browse the Windows clipboard history.
+'''
+
+[[mixins]]
+config="clipchat.client.mixins.json"
+
+[[dependencies.${mod_id}]]
+modId="neoforge"
+type="required"
+versionRange="${neo_version_range}"
+ordering="NONE"
+side="CLIENT"
+

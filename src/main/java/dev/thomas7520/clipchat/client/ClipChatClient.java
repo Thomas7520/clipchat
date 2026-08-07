@@ -15,28 +15,37 @@ import dev.thomas7520.clipchat.windows.WindowsClipboardProvider;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.fabricmc.loader.api.FabricLoader;
-
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.commands.Commands;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.GameShuttingDownEvent;
 
 import java.nio.file.Path;
 
-public class ClipChatClient implements ClientModInitializer {
+@Mod(value = "clipchat", dist = Dist.CLIENT)
+public class ClipChatClient {
 	private static volatile MinecraftClipboardProvider provider;
 	private static volatile ClipboardCapture capture;
 	private static volatile SystemClipboardService clipboard;
 	private static volatile ConfigManager config;
 
-	@Override
-	public void onInitializeClient() {
-		Path directory = FabricLoader.getInstance().getConfigDir().resolve("clipchat");
+	private final MinecraftClipboardProvider history;
+	private final WindowsClipboardProvider windowsHistory;
+	private final ChatWidgetController controller;
+	private final KeyMapping openConfigKey;
+
+	public ClipChatClient(IEventBus modEventBus, ModContainer modContainer) {
+		Path directory = FMLPaths.CONFIGDIR.get().resolve("clipchat");
 		HistoryStore store = new HistoryStore(directory.resolve("history.json"));
 
 		MinecraftClipboardProvider history = new MinecraftClipboardProvider(store, HistoryLimits.DEFAULT,
@@ -70,36 +79,46 @@ public class ClipChatClient implements ClientModInitializer {
 		clipboardCapture.setSourceResolver(controller::currentSource);
 		controller.register();
 
-		registerConfigKey();
-		registerCommand();
+		this.history = history;
+		this.windowsHistory = windowsHistory;
+		this.controller = controller;
+		this.openConfigKey = new KeyMapping("key.clipchat.config", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
 
-		ClientLifecycleEvents.CLIENT_STOPPING.register(_ -> {
-			controller.flush();
-			history.close();
-			windowsHistory.close();
-		});
+		modEventBus.addListener(this::onRegisterKeyMappings);
+		NeoForge.EVENT_BUS.addListener(this::onClientTick);
+		NeoForge.EVENT_BUS.addListener(this::onRegisterClientCommands);
+		NeoForge.EVENT_BUS.addListener(this::onGameShuttingDown);
+
+		modContainer.registerExtensionPoint(IConfigScreenFactory.class,
+				(ignoredContainer, parent) -> new ClipChatConfigScreen(parent, configManager));
 
 		ClipChatLog.LOGGER.info("[ClipChat] Client initialised");
 	}
 
-	private static void registerConfigKey() {
-		KeyMapping open = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.clipchat.config",
-				InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC));
-
-		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			while (open.consumeClick()) {
-				openConfig(client);
-			}
-		});
+	private void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
+		event.register(openConfigKey);
 	}
 
-	private static void registerCommand() {
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(
-				ClientCommands.literal("clipchat").executes(_ -> {
-					Minecraft client = Minecraft.getInstance();
-					client.execute(() -> openConfig(client));
-					return 1;
-				})));
+	private void onClientTick(ClientTickEvent.Post event) {
+		Minecraft client = Minecraft.getInstance();
+
+		while (openConfigKey.consumeClick()) {
+			openConfig(client);
+		}
+	}
+
+	private void onRegisterClientCommands(RegisterClientCommandsEvent event) {
+		event.getDispatcher().register(Commands.literal("clipchat").executes(context -> {
+			Minecraft client = Minecraft.getInstance();
+			client.execute(() -> openConfig(client));
+			return 1;
+		}));
+	}
+
+	private void onGameShuttingDown(GameShuttingDownEvent event) {
+		controller.flush();
+		history.close();
+		windowsHistory.close();
 	}
 
 	// Opens with a null parent, so closing the settings screen returns to the game.
@@ -120,8 +139,8 @@ public class ClipChatClient implements ClientModInitializer {
 	}
 
 	/**
-	 * Entry point for the {@code KeyboardHandler} mixin. Does nothing when called before
-	 * {@link #onInitializeClient()} has run.
+	 * Entry point for the {@code KeyboardHandler} mixin. Does nothing if invoked before ClipChat has
+	 * finished constructing its client entrypoint.
 	 */
 	public static void onClipboardWrite(String text) {
 		ClipboardCapture current = capture;
