@@ -5,7 +5,7 @@ import dev.thomas7520.clipchat.config.ConfigManager;
 import dev.thomas7520.clipchat.config.ThemePreset;
 import dev.thomas7520.clipchat.windows.WindowsClipboardProvider;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -49,27 +49,27 @@ public class ClipChatConfigScreen extends Screen {
 		addRenderableWidget(CycleButton
 				.builder(theme -> Component.translatable(theme.translationKey()), working.theme())
 				.withValues(ThemePreset.values())
-				.withTooltip(_ -> Tooltip.create(Component.translatable("clipchat.config.theme.tooltip")))
+				.withTooltip(value -> Tooltip.create(Component.translatable("clipchat.config.theme.tooltip")))
 				.create(left, rowY(0), ROW_WIDTH, 20, Component.translatable("clipchat.config.theme"),
-						(_, value) -> working = working.withTheme(value)));
+						(button, value) -> working = working.withTheme(value)));
 
 		addRenderableWidget(CycleButton.onOffBuilder(working.widgetVisible())
-				.withTooltip(_ -> Tooltip.create(Component.translatable("clipchat.config.visible.tooltip")))
+				.withTooltip(value -> Tooltip.create(Component.translatable("clipchat.config.visible.tooltip")))
 				.create(left, rowY(1), ROW_WIDTH, 20, Component.translatable("clipchat.config.visible"),
-						(_, value) -> working = working.withWidgetVisible(value)));
+						(button, value) -> working = working.withWidgetVisible(value)));
 
 		addRenderableWidget(CycleButton.onOffBuilder(working.captureEnabled())
-				.withTooltip(_ -> Tooltip.create(Component.translatable("clipchat.config.capture.tooltip")))
+				.withTooltip(value -> Tooltip.create(Component.translatable("clipchat.config.capture.tooltip")))
 				.create(left, rowY(2), ROW_WIDTH, 20, Component.translatable("clipchat.config.capture"),
-						(_, value) -> working = working.withCaptureEnabled(value)));
+						(button, value) -> working = working.withCaptureEnabled(value)));
 
 		CycleButton<Boolean> windows = addRenderableWidget(CycleButton
 				.onOffBuilder(working.windowsHistoryEnabled())
-				.withTooltip(_ -> Tooltip.create(Component.translatable(WindowsClipboardProvider.osSupported()
+				.withTooltip(value -> Tooltip.create(Component.translatable(WindowsClipboardProvider.osSupported()
 						? "clipchat.config.windows.tooltip"
 						: "clipchat.config.windows.unavailable")))
 				.create(left, rowY(3), ROW_WIDTH, 20, Component.translatable("clipchat.config.windows"),
-						(_, value) -> working = working.withWindowsHistoryEnabled(value)));
+						(button, value) -> working = working.withWindowsHistoryEnabled(value)));
 
 		// Off Windows the row stays visible but disabled, keeping the layout stable.
 		windows.active = WindowsClipboardProvider.osSupported();
@@ -79,7 +79,7 @@ public class ClipChatConfigScreen extends Screen {
 		lengthBox = numberBox(6, working.maxEntryLength(), "clipchat.config.max_length.tooltip");
 
 		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.colors"),
-						_ -> {
+						button -> {
 							captureBoxes();
 							minecraft.setScreen(
 									new ColorConfigScreen(this, working, updated -> working = updated));
@@ -87,20 +87,20 @@ public class ClipChatConfigScreen extends Screen {
 				.bounds(left, rowY(7), ROW_WIDTH, 20)
 				.build());
 
-		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.save"), _ -> applyAndClose())
+		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.save"), button -> applyAndClose())
 				.bounds(width / 2 - 102, height - 28, 100, 20)
 				.build());
 
-		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.cancel"), _ -> onClose())
+		addRenderableWidget(Button.builder(Component.translatable("clipchat.config.cancel"), button -> onClose())
 				.bounds(width / 2 + 2, height - 28, 100, 20)
 				.build());
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float tickDelta) {
-		super.extractRenderState(graphics, mouseX, mouseY, tickDelta);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float tickDelta) {
+		super.render(graphics, mouseX, mouseY, tickDelta);
 
-		graphics.centeredText(font, title, width / 2, 16, 0xFFFFFFFF);
+		graphics.drawCenteredString(font, title, width / 2, 16, 0xFFFFFFFF);
 
 		label(graphics, "clipchat.config.max_unpinned", 4);
 		label(graphics, "clipchat.config.max_pinned", 5);
@@ -113,8 +113,8 @@ public class ClipChatConfigScreen extends Screen {
 	}
 
 	/** Draws a row label at the left edge, with the matching field right-aligned against it. */
-	private void label(GuiGraphicsExtractor graphics, String key, int row) {
-		graphics.text(font, Component.translatable(key), left(), rowY(row) + 6, LABEL_COLOR);
+	private void label(GuiGraphics graphics, String key, int row) {
+		graphics.drawString(font, Component.translatable(key), left(), rowY(row) + 6, LABEL_COLOR);
 	}
 
 	private EditBox numberBox(int row, int value, String tooltipKey) {

@@ -36,11 +36,11 @@ clipboard history switched on in **Settings → System → Clipboard**.
 
 ## Installation
 
-1. Install [NeoForge](https://neoforged.net/) 26.1.2.94 or newer in the Minecraft 26.1.2 line.
+1. Install [NeoForge](https://neoforged.net/) 21.11.45 or newer in the Minecraft 1.21.11 line.
 2. Download the ClipChat jar and drop it into `.minecraft/mods/`.
 3. Launch the game with the NeoForge profile.
 
-You need **Java 25** or newer. Recent Minecraft launchers install a suitable runtime automatically.
+You need **Java 21** or newer. Recent Minecraft launchers install a suitable runtime automatically.
 
 ## Configuration
 

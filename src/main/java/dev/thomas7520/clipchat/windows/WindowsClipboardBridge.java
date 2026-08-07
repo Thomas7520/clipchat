@@ -6,14 +6,14 @@ import dev.thomas7520.clipchat.clipboard.model.EntryId;
 import dev.thomas7520.clipchat.clipboard.model.ProviderState;
 import dev.thomas7520.clipchat.clipboard.model.TextNormalizer;
 
-import java.lang.foreign.AddressLayout;
-import java.lang.foreign.Arena;
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SymbolLookup;
-import java.lang.foreign.ValueLayout;
-import java.lang.invoke.MethodHandle;
+import com.sun.jna.Function;
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.NativeLibrary;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
+
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -35,16 +35,6 @@ import java.util.function.Supplier;
  * multi-threaded apartment with {@code RO_E_UNSUPPORTED_FROM_MTA}.
  */
 final class WindowsClipboardBridge implements AutoCloseable {
-	private static final Linker LINKER = Linker.nativeLinker();
-	private static final AddressLayout PTR = ValueLayout.ADDRESS;
-	private static final ValueLayout.OfInt INT = ValueLayout.JAVA_INT;
-	private static final ValueLayout.OfLong LONG = ValueLayout.JAVA_LONG;
-
-	private static final FunctionDescriptor OUT_ONLY = FunctionDescriptor.of(INT, PTR, PTR);
-	private static final FunctionDescriptor ARG_AND_OUT = FunctionDescriptor.of(INT, PTR, PTR, PTR);
-	private static final FunctionDescriptor INDEX_AND_OUT = FunctionDescriptor.of(INT, PTR, INT, PTR);
-	private static final FunctionDescriptor NO_ARGS = FunctionDescriptor.of(INT, PTR);
-
 	private static final String CLIPBOARD_CLASS = "Windows.ApplicationModel.DataTransfer.Clipboard";
 	private static final String IID_CLIPBOARD_STATICS2 = "d2ac1b6a-d29f-554b-b303-f0452345fe02";
 	private static final String IID_ASYNC_INFO = "00000036-0000-0000-C000-000000000046";
@@ -71,12 +61,12 @@ final class WindowsClipboardBridge implements AutoCloseable {
 		return thread;
 	});
 
-	private final Map<Long, MethodHandle> handles = new HashMap<>();
+	private final Map<Long, Function> handles = new HashMap<>();
 
-	private MethodHandle createString;
-	private MethodHandle deleteString;
-	private MethodHandle getStringRawBuffer;
-	private MemorySegment factory;
+	private Function createString;
+	private Function deleteString;
+	private Function getStringRawBuffer;
+	private Pointer factory;
 	private boolean started;
 	private boolean unavailable;
 
@@ -107,14 +97,14 @@ final class WindowsClipboardBridge implements AutoCloseable {
 
 	CompletableFuture<Boolean> clearHistory() {
 		return on(() -> {
-			try (Arena arena = Arena.ofConfined()) {
+			try {
 				if (!connect()) {
 					return false;
 				}
 
-				MemorySegment out = arena.allocate(INT);
-				int hr = (int) handle(slot(factory, CLEAR_HISTORY), OUT_ONLY).invokeExact(factory, out);
-				return hr >= 0 && out.get(ValueLayout.JAVA_BYTE, 0) != 0;
+				Memory out = new Memory(4);
+				int hr = handle(slot(factory, CLEAR_HISTORY)).invokeInt(new Object[] { factory, out });
+				return hr >= 0 && out.getByte(0) != 0;
 			} catch (Throwable failure) {
 				return false;
 			}
@@ -126,7 +116,7 @@ final class WindowsClipboardBridge implements AutoCloseable {
 		apartment.execute(() -> {
 			if (factory != null) {
 				try {
-					int ignored = (int) handle(slot(factory, RELEASE), NO_ARGS).invokeExact(factory);
+					handle(slot(factory, RELEASE)).invokeInt(new Object[] { factory });
 				} catch (Throwable ignored) {
 					// Best effort; the apartment thread is shutting down either way.
 				}
@@ -147,32 +137,29 @@ final class WindowsClipboardBridge implements AutoCloseable {
 	 */
 	private CompletableFuture<Boolean> act(String nativeId, int slot, boolean statusResult) {
 		return on(() -> {
-			try (Arena arena = Arena.ofConfined()) {
+			try {
 				if (!connect()) {
 					return false;
 				}
 
-				MemorySegment result = awaitHistory(arena);
+				Pointer result = awaitHistory();
 
 				if (result == null) {
 					return false;
 				}
 
-				MemorySegment items = read(arena, result, 7);
-				int size = readInt(arena, items, 7);
+				Pointer items = read(result, 7);
+				int size = readInt(items, 7);
 				boolean done = false;
 
 				for (int index = 0; index < size && !done; index++) {
-					MemorySegment item = elementAt(arena, items, index);
+					Pointer item = elementAt(items, index);
 
-					if (nativeId.equals(text(arena, read(arena, item, 6)))) {
-						MemorySegment out = arena.allocate(INT);
-						int hr = (int) handle(slot(factory, slot), ARG_AND_OUT)
-								.invokeExact(factory, item, out);
+					if (nativeId.equals(text(read(item, 6)))) {
+						Memory out = new Memory(4);
+						int hr = handle(slot(factory, slot)).invokeInt(new Object[] { factory, item, out });
 						// Success is a zero status enum, or a non-zero boolean, depending on the method.
-						done = hr >= 0 && (statusResult
-								? out.get(INT, 0) == 0
-								: out.get(ValueLayout.JAVA_BYTE, 0) != 0);
+						done = hr >= 0 && (statusResult ? out.getInt(0) == 0 : out.getByte(0) != 0);
 					}
 
 					release(item);
@@ -188,70 +175,68 @@ final class WindowsClipboardBridge implements AutoCloseable {
 	}
 
 	private Snapshot readHistoryOnApartment(int maxCodePoints) throws Throwable {
-		try (Arena arena = Arena.ofConfined()) {
-			if (!connect()) {
-				return Snapshot.failed(ProviderState.UNSUPPORTED_OS);
-			}
-
-			MemorySegment enabled = arena.allocate(ValueLayout.JAVA_BYTE);
-			int hr = (int) handle(slot(factory, IS_HISTORY_ENABLED), OUT_ONLY).invokeExact(factory, enabled);
-
-			if (hr < 0 || enabled.get(ValueLayout.JAVA_BYTE, 0) == 0) {
-				return Snapshot.failed(ProviderState.DISABLED_BY_OS);
-			}
-
-			MemorySegment result = awaitHistory(arena);
-
-			if (result == null) {
-				return Snapshot.failed(ProviderState.ERROR);
-			}
-
-			int status = readInt(arena, result, 6);
-
-			if (status != 0) {
-				release(result);
-				// 1 == AccessDenied, 2 == ClipboardHistoryDisabled.
-				return Snapshot.failed(status == 1 ? ProviderState.ACCESS_DENIED : ProviderState.DISABLED_BY_OS);
-			}
-
-			MemorySegment items = read(arena, result, 7);
-			int size = readInt(arena, items, 7);
-			List<ClipboardEntry> entries = new ArrayList<>(size);
-
-			for (int index = 0; index < size; index++) {
-				readEntry(arena, items, index, maxCodePoints).ifPresent(entries::add);
-			}
-
-			release(items);
-			release(result);
-			return new Snapshot(entries.isEmpty() ? ProviderState.EMPTY : ProviderState.READY, entries);
+		if (!connect()) {
+			return Snapshot.failed(ProviderState.UNSUPPORTED_OS);
 		}
+
+		Memory enabled = new Memory(1);
+		int hr = handle(slot(factory, IS_HISTORY_ENABLED)).invokeInt(new Object[] { factory, enabled });
+
+		if (hr < 0 || enabled.getByte(0) == 0) {
+			return Snapshot.failed(ProviderState.DISABLED_BY_OS);
+		}
+
+		Pointer result = awaitHistory();
+
+		if (result == null) {
+			return Snapshot.failed(ProviderState.ERROR);
+		}
+
+		int status = readInt(result, 6);
+
+		if (status != 0) {
+			release(result);
+			// 1 == AccessDenied, 2 == ClipboardHistoryDisabled.
+			return Snapshot.failed(status == 1 ? ProviderState.ACCESS_DENIED : ProviderState.DISABLED_BY_OS);
+		}
+
+		Pointer items = read(result, 7);
+		int size = readInt(items, 7);
+		List<ClipboardEntry> entries = new ArrayList<>(size);
+
+		for (int index = 0; index < size; index++) {
+			readEntry(items, index, maxCodePoints).ifPresent(entries::add);
+		}
+
+		release(items);
+		release(result);
+		return new Snapshot(entries.isEmpty() ? ProviderState.EMPTY : ProviderState.READY, entries);
 	}
 
-	private Optional<ClipboardEntry> readEntry(Arena arena, MemorySegment items, int index, int maxCodePoints)
+	private Optional<ClipboardEntry> readEntry(Pointer items, int index, int maxCodePoints)
 			throws Throwable {
-		MemorySegment item = elementAt(arena, items, index);
+		Pointer item = elementAt(items, index);
 
 		try {
-			String id = text(arena, read(arena, item, 6));
+			String id = text(read(item, 6));
 
-			MemorySegment timestamp = arena.allocate(LONG);
-			int hr = (int) handle(slot(item, 7), OUT_ONLY).invokeExact(item, timestamp);
-			Instant createdAt = hr < 0 ? null : instant(timestamp.get(LONG, 0));
+			Memory timestamp = new Memory(8);
+			int hr = handle(slot(item, 7)).invokeInt(new Object[] { item, timestamp });
+			Instant createdAt = hr < 0 ? null : instant(timestamp.getLong(0));
 
-			MemorySegment view = read(arena, item, 8);
-			MemorySegment operation = arena.allocate(PTR);
-			hr = (int) handle(slot(view, GET_TEXT_ASYNC), OUT_ONLY).invokeExact(view, operation);
+			Pointer view = read(item, 8);
+			PointerByReference operation = new PointerByReference();
+			hr = handle(slot(view, GET_TEXT_ASYNC)).invokeInt(new Object[] { view, operation });
 
 			// A non-text item fails here with DV_E_FORMATETC and is skipped.
-			MemorySegment raw = hr < 0 ? null : await(arena, operation.get(PTR, 0));
+			Pointer raw = hr < 0 ? null : await(operation.getValue());
 			release(view);
 
 			if (raw == null) {
 				return Optional.empty();
 			}
 
-			return TextNormalizer.normalize(text(arena, raw), maxCodePoints, true)
+			return TextNormalizer.normalize(text(raw), maxCodePoints, true)
 					.map(normalized -> new ClipboardEntry(EntryId.windows(id), normalized.text(), createdAt,
 							false, null, ClipboardSource.WINDOWS_HISTORY, normalized.originalLength()));
 		} finally {
@@ -259,35 +244,34 @@ final class WindowsClipboardBridge implements AutoCloseable {
 		}
 	}
 
-	private MemorySegment awaitHistory(Arena arena) throws Throwable {
-		MemorySegment operation = arena.allocate(PTR);
-		int hr = (int) handle(slot(factory, GET_HISTORY_ITEMS_ASYNC), OUT_ONLY).invokeExact(factory, operation);
+	private Pointer awaitHistory() throws Throwable {
+		PointerByReference operation = new PointerByReference();
+		int hr = handle(slot(factory, GET_HISTORY_ITEMS_ASYNC)).invokeInt(new Object[] { factory, operation });
 
-		return hr < 0 ? null : await(arena, operation.get(PTR, 0));
+		return hr < 0 ? null : await(operation.getValue());
 	}
 
 	/**
 	 * Blocks until the operation completes, polling {@code IAsyncInfo::get_Status} until it leaves
 	 * the started state or {@link #TIMEOUT_NANOS} elapses. Returns the result, or null on failure.
 	 */
-	private MemorySegment await(Arena arena, MemorySegment operation) throws Throwable {
-		MemorySegment info = arena.allocate(PTR);
-		int hr = (int) handle(slot(operation, 0), ARG_AND_OUT)
-				.invokeExact(operation, guid(arena, IID_ASYNC_INFO), info);
+	private Pointer await(Pointer operation) throws Throwable {
+		PointerByReference info = new PointerByReference();
+		int hr = handle(slot(operation, 0)).invokeInt(new Object[] { operation, guid(IID_ASYNC_INFO), info });
 
 		if (hr < 0) {
 			release(operation);
 			return null;
 		}
 
-		MemorySegment asyncInfo = info.get(PTR, 0);
-		MemorySegment out = arena.allocate(INT);
+		Pointer asyncInfo = info.getValue();
+		Memory out = new Memory(4);
 		long deadline = System.nanoTime() + TIMEOUT_NANOS;
 		int state = 0;
 
 		while (System.nanoTime() < deadline) {
-			hr = (int) handle(slot(asyncInfo, ASYNC_STATUS), OUT_ONLY).invokeExact(asyncInfo, out);
-			state = hr < 0 ? 3 : out.get(INT, 0);
+			hr = handle(slot(asyncInfo, ASYNC_STATUS)).invokeInt(new Object[] { asyncInfo, out });
+			state = hr < 0 ? 3 : out.getInt(0);
 
 			if (state != 0) {
 				break;
@@ -303,14 +287,14 @@ final class WindowsClipboardBridge implements AutoCloseable {
 			return null;
 		}
 
-		MemorySegment results = arena.allocate(PTR);
-		hr = (int) handle(slot(operation, GET_RESULTS), OUT_ONLY).invokeExact(operation, results);
+		PointerByReference results = new PointerByReference();
+		hr = handle(slot(operation, GET_RESULTS)).invokeInt(new Object[] { operation, results });
 		release(operation);
 
-		return hr < 0 ? null : results.get(PTR, 0);
+		return hr < 0 ? null : results.getValue();
 	}
 
-	private boolean connect() throws Throwable {
+	private boolean connect() {
 		if (started) {
 			return !unavailable;
 		}
@@ -318,51 +302,42 @@ final class WindowsClipboardBridge implements AutoCloseable {
 		started = true;
 
 		try {
-			SymbolLookup combase = SymbolLookup.libraryLookup("combase.dll", Arena.global());
-			MethodHandle initialize = LINKER.downcallHandle(combase.find("RoInitialize").orElseThrow(),
-					FunctionDescriptor.of(INT, INT));
-			createString = LINKER.downcallHandle(combase.find("WindowsCreateString").orElseThrow(),
-					FunctionDescriptor.of(INT, PTR, INT, PTR));
-			deleteString = LINKER.downcallHandle(combase.find("WindowsDeleteString").orElseThrow(),
-					FunctionDescriptor.of(INT, PTR));
-			getStringRawBuffer = LINKER.downcallHandle(combase.find("WindowsGetStringRawBuffer").orElseThrow(),
-					FunctionDescriptor.of(PTR, PTR, PTR));
+			NativeLibrary combase = NativeLibrary.getInstance("combase");
+			Function initialize = combase.getFunction("RoInitialize");
+			createString = combase.getFunction("WindowsCreateString");
+			deleteString = combase.getFunction("WindowsDeleteString");
+			getStringRawBuffer = combase.getFunction("WindowsGetStringRawBuffer");
 
 			// 0 == RO_INIT_SINGLETHREADED. A positive status means the thread was already initialised.
-			int hr = (int) initialize.invokeExact(0);
+			int hr = initialize.invokeInt(new Object[] { 0 });
 
 			if (hr < 0) {
 				unavailable = true;
 				return false;
 			}
 
-			try (Arena arena = Arena.ofConfined()) {
-				MemorySegment name = arena.allocateFrom(CLIPBOARD_CLASS, StandardCharsets.UTF_16LE);
-				MemorySegment nameOut = arena.allocate(PTR);
-				hr = (int) createString.invokeExact(name, CLIPBOARD_CLASS.length(), nameOut);
+			Memory name = wideString(CLIPBOARD_CLASS);
+			PointerByReference nameOut = new PointerByReference();
+			hr = createString.invokeInt(new Object[] { name, CLIPBOARD_CLASS.length(), nameOut });
 
-				if (hr < 0) {
-					unavailable = true;
-					return false;
-				}
-
-				MemorySegment classId = nameOut.get(PTR, 0);
-				MemorySegment factoryOut = arena.allocate(PTR);
-				MethodHandle activation = LINKER.downcallHandle(
-						combase.find("RoGetActivationFactory").orElseThrow(),
-						FunctionDescriptor.of(INT, PTR, PTR, PTR));
-				hr = (int) activation.invokeExact(classId, guid(arena, IID_CLIPBOARD_STATICS2), factoryOut);
-
-				int ignored = (int) deleteString.invokeExact(classId);
-
-				if (hr < 0) {
-					unavailable = true;
-					return false;
-				}
-
-				factory = factoryOut.get(PTR, 0);
+			if (hr < 0) {
+				unavailable = true;
+				return false;
 			}
 
+			Pointer classId = nameOut.getValue();
+			PointerByReference factoryOut = new PointerByReference();
+			Function activation = combase.getFunction("RoGetActivationFactory");
+			hr = activation.invokeInt(new Object[] { classId, guid(IID_CLIPBOARD_STATICS2), factoryOut });
+
+			deleteString.invokeInt(new Object[] { classId });
+
+			if (hr < 0) {
+				unavailable = true;
+				return false;
+			}
+
+			factory = factoryOut.getValue();
 			return true;
 		} catch (Throwable failure) {
 			unavailable = true;
@@ -370,75 +345,94 @@ final class WindowsClipboardBridge implements AutoCloseable {
 		}
 	}
 
-	private MemorySegment elementAt(Arena arena, MemorySegment vector, int index) throws Throwable {
-		MemorySegment out = arena.allocate(PTR);
-		int hr = (int) handle(slot(vector, 6), INDEX_AND_OUT).invokeExact(vector, index, out);
+	private Pointer elementAt(Pointer vector, int index) {
+		if (vector == null) {
+			return null;
+		}
 
-		return hr < 0 ? null : out.get(PTR, 0);
+		PointerByReference out = new PointerByReference();
+		int hr = handle(slot(vector, 6)).invokeInt(new Object[] { vector, index, out });
+
+		return hr < 0 ? null : out.getValue();
 	}
 
-	private MemorySegment read(Arena arena, MemorySegment object, int slot) throws Throwable {
-		MemorySegment out = arena.allocate(PTR);
-		int hr = (int) handle(slot(object, slot), OUT_ONLY).invokeExact(object, out);
+	private Pointer read(Pointer object, int slot) {
+		if (object == null) {
+			return null;
+		}
 
-		return hr < 0 ? null : out.get(PTR, 0);
+		PointerByReference out = new PointerByReference();
+		int hr = handle(slot(object, slot)).invokeInt(new Object[] { object, out });
+
+		return hr < 0 ? null : out.getValue();
 	}
 
-	private int readInt(Arena arena, MemorySegment object, int slot) throws Throwable {
-		MemorySegment out = arena.allocate(INT);
-		int hr = (int) handle(slot(object, slot), OUT_ONLY).invokeExact(object, out);
+	private int readInt(Pointer object, int slot) {
+		if (object == null) {
+			return 0;
+		}
 
-		return hr < 0 ? 0 : out.get(INT, 0);
+		Memory out = new Memory(4);
+		int hr = handle(slot(object, slot)).invokeInt(new Object[] { object, out });
+
+		return hr < 0 ? 0 : out.getInt(0);
 	}
 
-	private String text(Arena arena, MemorySegment hstring) throws Throwable {
-		if (hstring == null || hstring.address() == 0) {
+	private String text(Pointer hstring) {
+		if (hstring == null || Pointer.nativeValue(hstring) == 0) {
 			return "";
 		}
 
-		MemorySegment lengthOut = arena.allocate(INT);
-		MemorySegment buffer = (MemorySegment) getStringRawBuffer.invokeExact(hstring, lengthOut);
-		int length = lengthOut.get(INT, 0);
+		IntByReference lengthOut = new IntByReference();
+		Pointer buffer = getStringRawBuffer.invokePointer(new Object[] { hstring, lengthOut });
+		int length = lengthOut.getValue();
 		String value = length == 0 ? ""
-				: new String(buffer.reinterpret(length * 2L).toArray(ValueLayout.JAVA_BYTE),
-						StandardCharsets.UTF_16LE);
+				: new String(buffer.getByteArray(0, length * 2), StandardCharsets.UTF_16LE);
 
-		int ignored = (int) deleteString.invokeExact(hstring);
+		deleteString.invokeInt(new Object[] { hstring });
 		return value;
 	}
 
-	private void release(MemorySegment object) throws Throwable {
-		if (object != null && object.address() != 0) {
-			int ignored = (int) handle(slot(object, RELEASE), NO_ARGS).invokeExact(object);
+	private void release(Pointer object) {
+		if (object != null && Pointer.nativeValue(object) != 0) {
+			handle(slot(object, RELEASE)).invokeInt(new Object[] { object });
 		}
 	}
 
-	/** Returns the downcall handle for a vtable function address, building it on first use. */
-	private MethodHandle handle(MemorySegment function, FunctionDescriptor descriptor) {
-		return handles.computeIfAbsent(function.address(), ignored -> LINKER.downcallHandle(function, descriptor));
+	/** Returns the JNA function wrapper for a vtable function address, building it on first use. */
+	private Function handle(Pointer function) {
+		return handles.computeIfAbsent(Pointer.nativeValue(function), ignored -> Function.getFunction(function));
 	}
 
-	private static MemorySegment slot(MemorySegment object, int index) {
-		MemorySegment vtable = object.reinterpret(PTR.byteSize()).get(PTR, 0);
-		return vtable.reinterpret((index + 1) * PTR.byteSize()).get(PTR, index * PTR.byteSize());
+	private static Pointer slot(Pointer object, int index) {
+		Pointer vtable = object.getPointer(0);
+		return vtable.getPointer((long) index * Native.POINTER_SIZE);
+	}
+
+	private static Memory wideString(String value) {
+		byte[] bytes = value.getBytes(StandardCharsets.UTF_16LE);
+		Memory memory = new Memory(bytes.length + 2L);
+		memory.write(0, bytes, 0, bytes.length);
+		memory.setShort(bytes.length, (short) 0);
+		return memory;
 	}
 
 	/**
 	 * Writes a {@link UUID} as a Windows GUID: the first three fields in native byte order, then the
 	 * remaining eight as bytes.
 	 */
-	private static MemorySegment guid(Arena arena, String uuid) {
+	private static Memory guid(String uuid) {
 		UUID parsed = UUID.fromString(uuid);
 		long high = parsed.getMostSignificantBits();
 		long low = parsed.getLeastSignificantBits();
-		MemorySegment segment = arena.allocate(16, 4);
+		Memory segment = new Memory(16);
 
-		segment.set(INT, 0, (int) (high >>> 32));
-		segment.set(ValueLayout.JAVA_SHORT, 4, (short) (high >>> 16));
-		segment.set(ValueLayout.JAVA_SHORT, 6, (short) high);
+		segment.setInt(0, (int) (high >>> 32));
+		segment.setShort(4, (short) (high >>> 16));
+		segment.setShort(6, (short) high);
 
 		for (int index = 0; index < 8; index++) {
-			segment.set(ValueLayout.JAVA_BYTE, 8 + index, (byte) (low >>> (56 - 8 * index)));
+			segment.setByte(8 + index, (byte) (low >>> (56 - 8 * index)));
 		}
 
 		return segment;

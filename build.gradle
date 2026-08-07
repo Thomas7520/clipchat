@@ -26,14 +26,19 @@ repositories {
 base {
     archivesName = "${minecraft_version}-${mod_id}-neoforged"
 }
-// Minecraft 26.1.2 uses Java 25.
+// Minecraft 1.21.11 uses Java 21.
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
 }
 
 neoForge {
     version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
 
     runs {
         client {
@@ -79,7 +84,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
         minecraft_version       : minecraft_version,
         minecraft_version_range : minecraft_version_range,
         neo_version             : neo_version,
-        neo_version_range : neo_version_range,
+        neo_version_range       : neo_version_range,
         mod_id                  : mod_id,
         mod_name                : mod_name,
         mod_license             : mod_license,

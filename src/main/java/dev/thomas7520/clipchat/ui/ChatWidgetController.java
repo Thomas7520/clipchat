@@ -7,6 +7,7 @@ import dev.thomas7520.clipchat.history.MinecraftClipboardProvider;
 
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -98,7 +99,8 @@ public final class ChatWidgetController {
 	}
 
 	private void onKeyPressed(ScreenEvent.KeyPressed.Pre event) {
-		if (event.getScreen() instanceof ChatScreen screen && widget.keyPressed(event.getKeyEvent(), screen.height)) {
+		if (event.getScreen() instanceof ChatScreen screen
+				&& widget.keyPressed(new KeyEvent(event.getKeyCode(), event.getScanCode(), event.getModifiers()), screen.height)) {
 			event.setCanceled(true);
 		}
 	}
