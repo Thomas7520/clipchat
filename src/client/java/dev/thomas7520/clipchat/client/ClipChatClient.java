@@ -84,7 +84,7 @@ public class ClipChatClient implements ClientModInitializer {
 
 	private static void registerConfigKey() {
 		KeyMapping open = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.clipchat.config",
-				InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC));
+				InputConstants.UNKNOWN.getValue(), KeyMapping.CATEGORY_MISC));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (open.consumeClick()) {

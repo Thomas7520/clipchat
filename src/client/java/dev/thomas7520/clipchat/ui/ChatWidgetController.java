@@ -71,17 +71,17 @@ public final class ChatWidgetController {
 			widget.render(graphics, client.font, rendered.width, rendered.height, mouseX, mouseY);
 		});
 
-		ScreenMouseEvents.allowMouseClick(screen).register((clicked, event) ->
-				!widget.mouseClicked(event.x(), event.y(), event.button(), clicked.width, clicked.height));
+		ScreenMouseEvents.allowMouseClick(screen).register((clicked, mouseX, mouseY, button) ->
+				!widget.mouseClicked(mouseX, mouseY, button, clicked.width, clicked.height));
 
-		ScreenMouseEvents.allowMouseRelease(screen).register((released, event) ->
+		ScreenMouseEvents.allowMouseRelease(screen).register((released, mouseX, mouseY, button) ->
 				!widget.mouseReleased());
 
 		ScreenMouseEvents.allowMouseScroll(screen).register((scrolled, mouseX, mouseY, horizontal, vertical) ->
 				!widget.mouseScrolled(mouseX, mouseY, vertical, scrolled.width, scrolled.height));
 
-		ScreenKeyboardEvents.allowKeyPress(screen).register((pressed, event) ->
-				!widget.keyPressed(event.key(), event.modifiers(), pressed.height));
+		ScreenKeyboardEvents.allowKeyPress(screen).register((pressed, key, scanCode, modifiers) ->
+				!widget.keyPressed(key, modifiers, pressed.height));
 	}
 
 	private void insertIntoChat(String text) {

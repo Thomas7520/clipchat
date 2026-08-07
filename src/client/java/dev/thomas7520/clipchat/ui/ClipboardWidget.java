@@ -11,12 +11,10 @@ import dev.thomas7520.clipchat.history.MinecraftClipboardProvider;
 import dev.thomas7520.clipchat.ui.model.WidgetGeometry;
 
 import com.mojang.blaze3d.platform.InputConstants;
-
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,9 +37,9 @@ public final class ClipboardWidget {
 	private static final int SCROLLBAR_WIDTH = 3;
 	private static final int MIN_THUMB_HEIGHT = 8;
 
-	private static final Identifier PIN_ICON = Identifier.fromNamespaceAndPath("clipchat", "textures/gui/pin.png");
-	private static final Identifier SETTINGS_ICON =
-			Identifier.fromNamespaceAndPath("clipchat", "textures/gui/settings.png");
+	private static final ResourceLocation PIN_ICON = ResourceLocation.fromNamespaceAndPath("clipchat", "textures/gui/pin.png");
+	private static final ResourceLocation SETTINGS_ICON =
+			ResourceLocation.fromNamespaceAndPath("clipchat", "textures/gui/settings.png");
 
 	private static final Component TITLE = Component.translatable("clipchat.widget.title");
 	private static final Component EMPTY = Component.translatable("clipchat.widget.empty");
@@ -287,8 +285,26 @@ public final class ClipboardWidget {
 	}
 
 	/** Draws a glyph. The textures are white masks, so {@code tint} becomes the drawn colour. */
-	private static void icon(GuiGraphics graphics, Identifier texture, int x, int y, int tint) {
-		graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, ICON_SIZE, ICON_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, tint);
+	/** Draws a glyph. The textures are white masks, so {@code tint} becomes the drawn colour. */
+	/** Draws the full white-mask texture scaled to ICON_SIZE.
+	 *  {@code tint} uses 0xAARRGGBB.
+	 */
+	private static void icon(
+			GuiGraphics graphics,
+			ResourceLocation texture,
+			int x,
+			int y,
+			int tint
+	) {
+		float red   = ((tint >>> 16) & 0xFF) / 255.0F;
+		float green = ((tint >>> 8)  & 0xFF) / 255.0F;
+		float blue  = (tint & 0xFF) / 255.0F;
+		float alpha = ((tint >>> 24) & 0xFF) / 255.0F;
+
+		graphics.setColor(red, green, blue, alpha);
+		graphics.blit(texture, x, y, ICON_SIZE, ICON_SIZE, 0.0F, 0.0F, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
+		graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+
 	}
 
 	private void drawCollapseButton(GuiGraphics graphics, int buttonX, int buttonY) {
